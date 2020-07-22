@@ -37,18 +37,19 @@ function addInhertiedProperties(model, modelId, models){
   for(var propertyName in parent.properties){
     model.properties[propertyName] = parent.properties[propertyName];
   }
-  
+
   if(parent.required) model.required = model.required.concat(parent.required);
 
   addInhertiedProperties(model, parent.id, models);
 }
 
-function validateModel(candidate, model, models){
+function validateModel(candidate, model, models, dataPath, hooks){
   if(candidate === null || typeof candidate !== 'object'){
     return new ValidationErrors(candidate, model);
   }
 
   models = models || {};
+  dataPath = dataPath || '$';
 
   model = clone(model);
   if(!model.required) model.required = [];
@@ -66,15 +67,17 @@ function validateModel(candidate, model, models){
 
   Object.keys(candidate).forEach(function(propertyName){
     var property = model.properties[propertyName];
-    
+
     if(property === undefined) return;
 
-    var error = validate.dataType(candidate[propertyName], property, models);
+    var error = validate.dataType(candidate[propertyName], property, models,
+      dataPath + '.' + propertyName, hooks);
+
     if(error){
       errors.push(new ValidationError(propertyName, property, error));
     }
   });
-  
+
   if(errors.length){
     return new ValidationErrors(candidate, model.id, model, errors);
   }

@@ -59,7 +59,7 @@ exports.NotABooleanError = NotABooleanError;
 
 function NotAnArrayError(value, actualType){
   this.name = 'NotAnArrayError';
-  this.message = '"' + value + '" is not an array';
+  this.message = '`' + value + '` is not an array';
   if(actualType) this.message += ' (got a ' + actualType + ' instead)';
 
   this.value = value;
@@ -80,7 +80,7 @@ exports.DuplicateInSetError = DuplicateInSetError;
 
 function NotVoidError(value, actualType){
   this.name = 'NotVoidError';
-  this.message = '"' + value + '" is not null or undefined';
+  this.message = '`' + value + '` is not null or undefined';
   if(actualType) this.message += ' (got a ' + actualType + ' instead)';
 
   this.value = value;
@@ -91,7 +91,7 @@ exports.NotVoidError = NotVoidError;
 
 function NotAStringError(value, actualType){
   this.name = 'NotAStringError';
-  this.message = '"' + value + '" is not a string';
+  this.message = '`' + value + '` is not a string';
   if(actualType) this.message += ' (got a ' + actualType + ' instead)';
 
   this.value = value;
@@ -102,8 +102,8 @@ exports.NotAStringError = NotAStringError;
 
 function StringNotInEnumError(value, acceptableValues){
   this.name = 'StringNotInEnumError';
-  this.message = '"' + value + '" is not an acceptable value: "' + acceptableValues.join('", "') + '"';
- 
+  this.message = '`' + value + '` is not an acceptable value: "' + acceptableValues.join('", "') + '"';
+
   this.value = value;
 }
 StringNotInEnumError.prototype = Object.create(DataTypeValidationError.prototype);
@@ -120,9 +120,25 @@ ErrorsInArrayElementsError.prototype = Object.create(DataTypeValidationError.pro
 ErrorsInArrayElementsError.prototype.constructor = ErrorsInArrayElementsError;
 exports.ErrorsInArrayElementsError = ErrorsInArrayElementsError;
 
+function ArrayHasTooFewItemsError(length, minItems){
+  this.name = 'ArrayHasTooFewItemsError';
+  this.message = 'minimum ' + minItems + ' item(s), ' + length + ' is too few';
+}
+ArrayHasTooFewItemsError.prototype = Object.create(DataTypeValidationError.prototype);
+ArrayHasTooFewItemsError.prototype.constructor = ArrayHasTooFewItemsError;
+exports.ArrayHasTooFewItemsError = ArrayHasTooFewItemsError;
+
+function ArrayHasTooManyItemsError(length, maxItems){
+  this.name = 'ArrayHasTooManyItemsError';
+  this.message = 'maximum ' + maxItems + ' item(s), ' + length + ' is too many';
+}
+ArrayHasTooManyItemsError.prototype = Object.create(DataTypeValidationError.prototype);
+ArrayHasTooManyItemsError.prototype.constructor = ArrayHasTooManyItemsError;
+exports.ArrayHasTooManyItemsError = ArrayHasTooManyItemsError;
+
 function MissingValueError(){
   this.name = 'MissingValueError';
-  
+
   this.message = 'This value is required but missing';
 }
 MissingValueError.prototype = Object.create(DataTypeValidationError.prototype);
@@ -135,7 +151,7 @@ function ValidationError(specName, spec, error){
   this.spec = spec;
   this.error = error;
 
-  this.message = specName + ' is invalid: ' + error.message;
+  this.message = '`' + specName + '` is invalid: ' + error.message;
 }
 ValidationError.prototype = Object.create(DataTypeValidationError.prototype);
 ValidationError.prototype.constructor = ValidationError;
@@ -149,11 +165,17 @@ function ValidationErrors(value, specName, spec, errors){
   this.spec = spec;
   this.errors = errors || [];
 
-  this.message = specName + ' is invalid';
+  var messages = []
+
+  if (specName) {
+    messages.push('`' + this.specName + '` is invalid');
+  }
 
   if(this.errors.length){
-    this.message += ':\n\t' + this.errors.map(function(e){ return e.message; }).join('\n\t');
+    messages.push(this.errors.map(function(e){ return e.message; }).join('\n\t'))
   }
+
+  this.message = "\n\t" + messages.join("\n\t") + "\n"
 }
 ValidationErrors.prototype = Object.create(DataTypeValidationError.prototype);
 ValidationErrors.prototype.constructor = ValidationErrors;

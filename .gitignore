@@ -8,3 +8,5 @@
 # Generated
 /build/
 /reports/
+
+.vscode
